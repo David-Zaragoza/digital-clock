@@ -11,31 +11,31 @@ const int rs = 2, en = 3, d4 = 4, d5 = 5, d6 = 6, d7 = 7;
 LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
 //defines contrast for the LCD
 int cs=9;// 9th pin
-const int contraste = 100;// sets the contrast to its standard setting
+const int screenContrast = 100;// sets the contrast to its standard setting
 // sets the standard time display for 00:00:00 AM or midnight
-int horas=00;
-int minutos=00;
-int segundos=00;
-int bandera=0; //PM
+int hoursetting=00;
+int minutessetting=00;
+int secondssetting=00;
+int boolflag=0; //PM
 // buttons for time setting
-int primerBoton;
-int segundoBoton;
+int buttonOne;
+int buttonTwo;
 // this defines the pins for time setting
-int ubicacionDeHoras=1;// this is pin 1 for setting the hours
-int ubicacionDeMinutos=2;// this is pin 2 for setting the minutes
+int hoursButton=1;// this is pin 1 for setting the hours
+int minutesButton=2;// this is pin 2 for setting the minutes
 // defines the timing out for the backlight
 const int Time_light=150;
-int paLaLuz=Time_light;// this defines the process of the backlight timing out
-int LDT=10; // this is the amount of time it takes for the backlight to time out
-const int luzDeTras=120; 
+int lightAdjust=Time_light;// this defines the process of the backlight timing out
+int backlightTimeOut=10; // this is the amount of time it takes for the backlight to time out
+const int backlightAdjust=120; 
 static uint32_t last_time, now = 0; 
 void setup()
 {
   lcd.begin(16,2);
-  pinMode(ubicacionDeHoras,jalaINPUT);  
-pinMode(ubicacionDeMinutos,jalaINPUT);
-  analogWrite(cs,contraste);
-  analogWrite(LDT,luzDeTras);// turns on the backlight
+  pinMode(hoursButton,jalaINPUT);  
+pinMode(minutesButton,jalaINPUT);
+  analogWrite(cs,screenContrast);
+  analogWrite(backlightTimeOut,backlightAdjust);// turns on the backlight
   now=millis(); // this will read the RTC value 
 }
 void loop()
@@ -43,16 +43,16 @@ void loop()
   lcd.begin(16,2);
  lcd.setCursor(0,0);
  lcd.print("Time ");
- if(horas<10)lcd.print("0");// always 2 digits
- lcd.print(horas);
+ if(hoursetting<10)lcd.print("0");// always 2 digits
+ lcd.print(hoursetting);
  lcd.print(":");
- if(minutos <10)lcd.print("0");
- lcd.print(minutos);
+ if(minutessetting <10)lcd.print("0");
+ lcd.print(minutessetting);
  lcd.print(":");
- if(segundos<10)lcd.print("0");
- lcd.print(segundos);
- if(bandera==0) lcd.print(" AM");
- if(bandera==1) lcd.print(" PM");
+ if(secondssetting<10)lcd.print("0");
+ lcd.print(secondssetting);
+ if(boolflag==0) lcd.print(" AM");
+ if(boolflag==1) lcd.print(" PM");
  lcd.setCursor(0,1);
  lcd.print("Precision clock");
 for ( int i=0 ;i<5 ;i++)
@@ -62,89 +62,89 @@ for ( int i=0 ;i<5 ;i++)
     now=millis();
   }
  last_time=now;
- primerBoton=digitalRead(ubicacionDeHoras);
- segundoBoton=digitalRead(ubicacionDeMinutos);
- paLaLuz--;
- if(paLaLuz == 0)
+ buttonOne=digitalRead(hoursButton);
+ buttonTwo=digitalRead(minutesButton);
+ --;
+ if(lightAdjust == 0)
  {
-  analogWrite(LDT,0);// Backlight OFF
-  paLaLuz++;
+  analogWrite(backlightTimeOut,0);// Backlight OFF
+  lightAdjust++;
  }
  //process to press whatever button to turn on the backlight 
- if(  ((primerBoton==0)|(segundoBoton==0)) & (paLaLuz==1)  )
+ if(  ((buttonOne==0)|(buttonTwo==0)) & (lightAdjust==1)  )
  {
-  paLaLuz=Time_light;
-  analogWrite(LDT,luzDeTras);
-  while ((primerBoton==0)|(segundoBoton==0))
+  lightAdjust=Time_light;
+  analogWrite(backlightTimeOut,backlightAdjust);
+  while ((buttonOne==0)|(buttonTwo==0))
   {
-   primerBoton=digitalRead(ubicacionDeHoras);
-   segundoBoton=digitalRead(ubicacionDeMinutos);
+   buttonOne=digitalRead(hoursButton);
+   buttonTwo=digitalRead(minutesButton);
   }
  }
  else
  {
-  if(primerBoton==0){
-   horas++;
-   paLaLuz=Time_light;
-   analogWrite(LDT,luzDeTras);
+  if(buttonOne==0){
+   hoursetting++;
+   lightAdjust=Time_light;
+   analogWrite(backlightTimeOut,backlightAdjust);
   }
- if(segundoBoton==0){
-  segundos=0;
-  minutos++;
-  paLaLuz=Time_light;
-  analogWrite(LDT,luzDeTras);
+ if(buttonTwo==0){
+  secondssetting=0;
+  minutessetting++;
+  lightAdjust=Time_light;
+  analogWrite(backlightTimeOut,backlightAdjust);
   }
 /* ---- manage seconds, minutes, hours am/pm overflow ----*/
  if(s==60){
-  segundos=0;
-   minutos++;
+  secondssetting=0;
+   minutessetting++;
  }
- if(minutos == 60)
+ if(minutessetting == 60)
  {
-  minutos =0;
-  horas++;
+  minutessetting =0;
+  hoursetting++;
  }
- if(horas == 13)
+ if(hoursetting == 13)
  {
-  horas =1;
-  bandera++;
-  if(bandera == 2) bandera=0;
+  hoursetting =1;
+  boolflag++;
+  if(boolflag == 2) boolflag=0;
  }
- if((primerBoton==0)|(segundoBoton==0)) 
+ if((buttonOne==0)|(buttonTwo==0)) 
 {
   lcd.setCursor(0,0);
   lcd.print("Time ");
-  if(horas < 10)lcd.print("0");  
-  lcd.print(horas);
+  if(hoursetting < 10)lcd.print("0");  
+  lcd.print(hoursetting);
   lcd.print(":");
-  if(minutos < 10)lcd.print("0");
-  lcd.print(minutos);
+  if(minutessetting < 10)lcd.print("0");
+  lcd.print(minutessetting);
   lcd.print(":");
-  if(segundos<10)lcd.print("0");
-  lcd.print(segundos);
-  if(bandera == 0) lcd.print(" AM");
-  if(bandera == 1) lcd.print(" PM");
+  if(secondssetting<10)lcd.print("0");
+  lcd.print(secondssetting);
+  if(boolflag == 0) lcd.print(" AM");
+  if(boolflag == 1) lcd.print(" PM");
     lcd.setCursor(0,1);
   lcd.print("Precision clock");
  }
  } // terminate the if else loop
 }// terminate the for loop
- segundos++; 
- if(segundos == 60){
-  segundos = 0;
-  minutos++;
+ secondssetting++; 
+ if(secondssetting == 60){
+  secondssetting = 0;
+  minutessetting++;
  }
- if(minutos == 60)
+ if(minutessetting == 60)
  {
-  minutos = 0;
-  horas++;
+  minutessetting = 0;
+  hoursetting++;
  }
- if(horas == 13)
+ if(hoursetting == 13)
  {
-  horas = 1;
-  bandera++;
-  if(bandera == 2)
-bandera = 0;
+  hoursetting = 1;
+  boolflag++;
+  if(boolflag == 2)
+boolflag = 0;
  }
 // end this loop
 }
